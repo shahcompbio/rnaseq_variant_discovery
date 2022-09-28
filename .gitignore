@@ -1,0 +1,5 @@
+.snakemake
+*_STARtmp/
+*Log.progress.out
+README.md
+main_run/
