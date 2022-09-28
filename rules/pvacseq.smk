@@ -257,8 +257,8 @@ rule pvacseq:
         modes = 'MHCflurry MHCnuggetsI MHCnuggetsII NNalign NetMHC PickPocket SMM SMMPMBEC SMMalign',
     singularity: '/juno/work/shah/users/chois7/apollo/pvactools_latest.sif',
     resources:
-        mem_mb=12000,
-        disk_mb=4000,
+        mem_mb=config['pvacseq']['mem_mb'],
+        disk_mb=config['pvacseq']['disk_mb'],
     shell:
         ## input.hla content:
         #         A1      A2      B1      B2      C1      C2      Reads   Objective
