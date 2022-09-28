@@ -2,8 +2,9 @@ CLUSTER_CMD=("bsub -n {threads} -R {cluster.resources} -M {cluster.memory} -o {c
 snakemake --configfile config.yaml \
     --use-singularity \
     --singularity-args "--bind /juno --bind /rtsess01" \
-    --jobs 4 \
+    --jobs 30 \
     --skip-script-cleanup \
     --cluster-config ./cluster.yaml \
     --cluster "${CLUSTER_CMD}" \
+    --cluster-cancel bkill \
     --rerun-incomplete #--dry-run

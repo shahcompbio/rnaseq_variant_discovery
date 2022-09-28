@@ -3,10 +3,12 @@ reference_fasta: /juno/work/shah/isabl_data_lake/assemblies/GRCh37/GRCh37-lite/G
 
 cohort_file: /juno/work/shah/users/chois7/apollo/neoantigen/n69/cohort.tsv
 
-star_ref_dir: /juno/work/shah/reference/transcriptomes/STAR/GRCh37
+star:
+    ref_dir: /juno/work/shah/reference/transcriptomes/STAR/GRCh37
+    threads: 8
+    mem_mb: 40000
 
 known_snp_sites: /juno/work/shah/reference/databases/dbsnp_b146_GRCh37p13.vcf.gz
-
 tmp_dir: /juno/work/shah/users/chois7/apollo/neoantigen/tmp_dir
 
 gtf: /work/shah/reference/kallisto_references/homo_sapiens/Homo_sapiens.GRCh38.96.gtf 
@@ -27,13 +29,10 @@ vep:
 
 gatk:
     interval: 6:27350704-32473203
-#    run_file: /juno/home/chois7/miniconda3/envs/apollo/share/gatk4-4.2.6.1-0/gatk
 
-#vt:
-#    run_file: /juno/home/chois7/miniconda3/envs/apollo/bin/vt
-
-#vcf_readcount_annotator:
-#    run_file: /juno/home/chois7/miniconda3/envs/apollo/bin/vcf-readcount-annotator
+pvacseq:
+    mem_mb: 12000
+    disk_mb: 4000
 
 # Output suffixes
 outputs:
@@ -42,6 +41,3 @@ outputs:
   bench: benchmarks
   work: scratch
 
-
-mem_mb: 4000
-disk_mb: 4000

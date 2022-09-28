@@ -15,25 +15,17 @@ def _get_runinfo(rna_sample):
     return runinfo
 
 def _get_R1(wildcards):
-    print('sample:', wildcards.sample)
-    print('rna_sample:',  wildcards.rna_sample)
     runinfo = _get_runinfo(wildcards.rna_sample)
-    print(runinfo)
     R1_list = list(filter(lambda x: ('_R1_' in x), runinfo['call'].split(' ')))
     assert len(R1_list) == 1, f'R1_list = {R1_list}'
     fastq = R1_list[0]
-    print('R1:', fastq)
     return fastq
     
 def _get_R2(wildcards):
-    print('R2 sample:', wildcards.sample)
-    print('R2 rna_sample:', wildcards.rna_sample)
     runinfo = _get_runinfo(wildcards.rna_sample)
-    print(runinfo)
     R2_list = list(filter(lambda x: ('_R2_' in x), runinfo['call'].split(' ')))
     assert len(R2_list) == 1, f'R2_list = {R2_list}'
     fastq = R2_list[0]
-    print('R2:', fastq)
     return fastq
 
 
@@ -44,11 +36,14 @@ rule star:
     output:
         bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam',
     params:
-        star_ref_dir=config['star_ref_dir'],
-        threads=8,
+        star_ref_dir=config['star']['ref_dir'],
+        threads=config['star']['threads'],
         out_prefix='main_run/{patient}/{sample}/outputs/star/{rna_sample}.',
     singularity:
         'docker://dceoy/star'
+    threads: config['star']['threads'],
+    resources: 
+        mem_mb=config['star']['mem_mb'],
     shell:
         'touch {output.bam} && '
         'STAR '
