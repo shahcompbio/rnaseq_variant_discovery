@@ -42,10 +42,11 @@ rule star:
         R1=_get_R1, # forward
         R2=_get_R2, # reverse
     output:
-        bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.out.Unsorted.bam',
+        bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam',
     params:
         star_ref_dir=config['star_ref_dir'],
         threads=8,
+        out_prefix='main_run/{patient}/{sample}/outputs/star/{rna_sample}.',
     singularity:
         'docker://dceoy/star'
     shell:
@@ -53,7 +54,7 @@ rule star:
         'STAR '
         '--genomeDir {params.star_ref_dir} '
         '--readFilesIn {input.R1} {input.R2} ' # forward reverse
-        '--outFileNamePrefix {wildcards.sample} '
+        '--outFileNamePrefix {params.out_prefix} '
         '--runThreadN {params.threads} ' 
         '--readFilesCommand "gunzip -c" ' # how to read input
         '--outSAMtype BAM Unsorted ' # output file format (unsorted BAM file)
@@ -64,7 +65,7 @@ rule star:
 
 rule add_or_replace_rg:
     input:
-        bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.out.Unsorted.bam',
+        bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam',
     output:
         bam='main_run/{patient}/{sample}/outputs/add_or_replace_rg/{rna_sample}.sorted.bam',
     params:
