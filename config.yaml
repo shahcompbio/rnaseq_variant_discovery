@@ -1,6 +1,7 @@
 log_dir: /juno/work/shah/users/chois7/apollo/neoantigen/cluster_log
 reference_fasta: /juno/work/shah/isabl_data_lake/assemblies/GRCh37/GRCh37-lite/GRCh37-lite.fa
 
+test_mode: False
 test_R1: /juno/work/shah/users/chois7/apollo/neoantigen/pipeline/test/data/test_R1_001.fastq.gz
 test_R2: /juno/work/shah/users/chois7/apollo/neoantigen/pipeline/test/data/test_R2_001.fastq.gz
 
