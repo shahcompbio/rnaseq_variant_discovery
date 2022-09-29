@@ -1,12 +1,16 @@
 log_dir: /juno/work/shah/users/chois7/apollo/neoantigen/cluster_log
 reference_fasta: /juno/work/shah/isabl_data_lake/assemblies/GRCh37/GRCh37-lite/GRCh37-lite.fa
 
+test_R1: /juno/work/shah/users/chois7/apollo/neoantigen/pipeline/test/data/test_R1_001.fastq.gz
+test_R2: /juno/work/shah/users/chois7/apollo/neoantigen/pipeline/test/data/test_R2_001.fastq.gz
+
 cohort_file: /juno/work/shah/users/chois7/apollo/neoantigen/n69/cohort.tsv
 
 star:
     ref_dir: /juno/work/shah/reference/transcriptomes/STAR/GRCh37
-    threads: 8
-    mem_mb: 40000
+    threads: 4
+    mem_mb: 30000
+    io_heavy: 1
 
 known_snp_sites: /juno/work/shah/reference/databases/dbsnp_b146_GRCh37p13.vcf.gz
 tmp_dir: /juno/work/shah/users/chois7/apollo/neoantigen/tmp_dir

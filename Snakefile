@@ -3,7 +3,8 @@ import pandas as pd
 
 cohort_file = config['cohort_file']
 cohort = pd.read_table(cohort_file) # patient, sample, rna_sample w/o NA
-cohort = cohort[cohort['sample']=='ADT167R2']
+cohort = pd.DataFrame([['test', 'testDNA', 'testRNA']], # test data
+               columns=['patient', 'sample', 'rna_sample'])
    
 vcfs=[f'main_run/{patient}/{sample}/outputs/haplotypecaller/{rna_sample}.vcf' 
             for rix, (patient, sample, rna_sample) in cohort.iterrows()]

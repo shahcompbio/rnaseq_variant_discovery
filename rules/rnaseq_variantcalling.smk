@@ -15,6 +15,7 @@ def _get_runinfo(rna_sample):
     return runinfo
 
 def _get_R1(wildcards):
+    if wildcards.rna_sample == 'testRNA': return config['test_R1']
     runinfo = _get_runinfo(wildcards.rna_sample)
     R1_list = list(filter(lambda x: ('_R1_' in x), runinfo['call'].split(' ')))
     assert len(R1_list) == 1, f'R1_list = {R1_list}'
@@ -22,6 +23,7 @@ def _get_R1(wildcards):
     return fastq
     
 def _get_R2(wildcards):
+    if wildcards.rna_sample == 'testRNA': return config['test_R2']
     runinfo = _get_runinfo(wildcards.rna_sample)
     R2_list = list(filter(lambda x: ('_R2_' in x), runinfo['call'].split(' ')))
     assert len(R2_list) == 1, f'R2_list = {R2_list}'
@@ -34,7 +36,7 @@ rule star:
         R1=_get_R1, # forward
         R2=_get_R2, # reverse
     output:
-        bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam',
+        bam=temp('main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam'),
     params:
         star_ref_dir=config['star']['ref_dir'],
         threads=config['star']['threads'],
@@ -42,8 +44,9 @@ rule star:
     singularity:
         'docker://dceoy/star'
     threads: config['star']['threads'],
-    resources: 
-        mem_mb=config['star']['mem_mb'],
+    #resources: 
+    #    mem_mb=config['star']['mem_mb'],
+    #    io_heavy=config['star']['io_heavy'],
     shell:
         'touch {output.bam} && '
         'STAR '
@@ -62,7 +65,7 @@ rule add_or_replace_rg:
     input:
         bam='main_run/{patient}/{sample}/outputs/star/{rna_sample}.Aligned.out.bam',
     output:
-        bam='main_run/{patient}/{sample}/outputs/add_or_replace_rg/{rna_sample}.sorted.bam',
+        bam=temp('main_run/{patient}/{sample}/outputs/add_or_replace_rg/{rna_sample}.sorted.bam'),
     params:
         tmp_dir=config['tmp_dir'],
     singularity:
@@ -71,7 +74,8 @@ rule add_or_replace_rg:
         "gatk --java-options '-Xmx4g -Djava.io.tmpdir={params.tmp_dir}' "
         "AddOrReplaceReadGroups "
         '-I {input.bam} -O {output.bam} '
-        '--CREATE_INDEX=true '
+        '--CREATE_INDEX true '
+        '-SO coordinate ' # sort order
         '-PL illumina '
         '-LB {wildcards.sample} '
         '-PU {wildcards.sample} '
@@ -81,7 +85,7 @@ rule mark_duplicates:
     input:
         bam='main_run/{patient}/{sample}/outputs/add_or_replace_rg/{rna_sample}.sorted.bam',
     output:
-        bam='main_run/{patient}/{sample}/outputs/mark_dupplicates/{rna_sample}.dedup.bam',
+        bam=temp('main_run/{patient}/{sample}/outputs/mark_dupplicates/{rna_sample}.dedup.bam'),
         metrics='main_run/{patient}/{sample}/outputs/mark_dupplicates/{rna_sample}.dedup.bam.metrics',
     params:
         tmp_dir=config['tmp_dir'],
@@ -91,14 +95,14 @@ rule mark_duplicates:
         "gatk --java-options '-Xmx4g -Djava.io.tmpdir={params.tmp_dir}' "
         "MarkDuplicates "
         '-I {input.bam} -O {output.bam} -M {output.metrics} '
-        '--CREATE_INDEX=true '
-        '--ASSUME_SORT_ORDER=coordinate '
+        '--CREATE_INDEX true '
+        '--ASSUME_SORT_ORDER coordinate '
 
 rule split_n_cigar_reads:
     input:
         bam='main_run/{patient}/{sample}/outputs/mark_dupplicates/{rna_sample}.dedup.bam',
     output:
-        bam='main_run/{patient}/{sample}/outputs/split_n_cigar_reads/{rna_sample}.splitncigar.bam',
+        bam=temp('main_run/{patient}/{sample}/outputs/split_n_cigar_reads/{rna_sample}.splitncigar.bam'),
     params:
         tmp_dir=config['tmp_dir'],
         reference_fasta=config['reference_fasta'],
