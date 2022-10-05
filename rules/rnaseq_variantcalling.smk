@@ -15,16 +15,16 @@ def _get_runinfo(rna_sample):
     return runinfo
 
 def _get_R1(wildcards):
-    if wildcards.rna_sample == 'testRNA': return config['test_R1']
-    runinfo = _get_runinfo(wildcards.rna_sample)
+    if wildcards.sample == 'testRNA': return config['test_R1']
+    runinfo = _get_runinfo(wildcards.sample)
     R1_list = list(filter(lambda x: ('_R1_' in x), runinfo['call'].split(' ')))
     assert len(R1_list) == 1, f'R1_list = {R1_list}'
     fastq = R1_list[0]
     return fastq
     
 def _get_R2(wildcards):
-    if wildcards.rna_sample == 'testRNA': return config['test_R2']
-    runinfo = _get_runinfo(wildcards.rna_sample)
+    if wildcards.sample == 'testRNA': return config['test_R2']
+    runinfo = _get_runinfo(wildcards.sample)
     R2_list = list(filter(lambda x: ('_R2_' in x), runinfo['call'].split(' ')))
     assert len(R2_list) == 1, f'R2_list = {R2_list}'
     fastq = R2_list[0]
@@ -77,9 +77,9 @@ rule add_or_replace_rg:
         '--CREATE_INDEX true '
         '-SO coordinate ' # sort order
         '-PL illumina '
-        '-LB {wildcards.sample} '
-        '-PU {wildcards.sample} '
-        '-SM {wildcards.sample} '
+        '-LB {wildcards.rna_sample} '
+        '-PU {wildcards.rna_sample} '
+        '-SM {wildcards.rna_sample} ' # fixed post-hoc
 
 rule mark_duplicates:
     input:
@@ -167,6 +167,69 @@ rule haplotypecaller:
         '-R {params.reference_fasta} '
         '-I {input.bam} '
         '-O {output.vcf} '
+
+rule vt_decompose_rna:
+    input:
+        vcf='main_run/{patient}/{sample}/outputs/haplotypecaller/{rna_sample}.vcf',
+    output:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.vcf',
+    params:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.sample_fixed.vcf',
+    singularity:
+        "docker://zlskidmore/vt",
+    shell:
+        'sed "s/{wildcards.sample}/{wildcards.rna_sample}/g" {input.vcf} > {params.vcf} && '
+        'vt decompose '
+        '-s {params.vcf} ' # fix to input.vcf
+        '-o {output.vcf}' 
+
+rule bam_readcount_rna:
+    input:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.vcf',
+        bam='main_run/{patient}/{sample}/outputs/recalibration/{rna_sample}.bam',
+        ref=config['reference_fasta'],
+    output:
+        snv_tsv='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}_bam_readcount_snv.tsv',
+        indel_tsv='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}_bam_readcount_indel.tsv',
+    params:
+        outdir='main_run/{patient}/{sample}/outputs/rna_readcount'
+    singularity:
+        '/juno/work/shah/users/chois7/apollo/neoantigen/bam-readcount_helper_v0.0.3.sif',
+    shell:
+        'python /usr/bin/bam_readcount_helper.py ' 
+        '{input.vcf} ' 
+        '{wildcards.rna_sample} ' # wrongly mapped to DNA sample... searches sample with pyvcf
+        '{input.ref} ' 
+        '{input.bam} '
+        '{params.outdir}'
+    
+rule vcf_readcount_annotator_snv_rna:
+    input:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.vcf',
+        snv_tsv='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}_bam_readcount_snv.tsv',
+    output:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.snv_annotated.vcf',
+    singularity:
+        'docker://griffithlab/vatools',
+    shell:
+        'vcf-readcount-annotator '
+        '{input.vcf} {input.snv_tsv} '
+        'RNA -s {wildcards.rna_sample} '
+        '-t snv -o {output.vcf}'
+
+rule vcf_readcount_annotator_indel_rna:
+    input:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.snv_annotated.vcf',
+        indel_tsv='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}_bam_readcount_indel.tsv',
+    output:
+        vcf='main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.both_annotated.vcf',
+    singularity:
+        'docker://griffithlab/vatools',
+    shell:
+        'vcf-readcount-annotator '
+        '{input.vcf} {input.indel_tsv} '
+        'RNA -s {wildcards.rna_sample} '
+        '-t indel -o {output.vcf}'
 
 #rule variant_filtration:
 #    input:

@@ -13,7 +13,7 @@ pvacseq_tsvs = [f'main_run/{patient}/{sample}/outputs/pvacseq/MHC_Class_I/{sampl
         for rix, (patient, sample, rna_sample) in cohort.iterrows()] 
 pvacseq_flt_tsvs = [f'main_run/{patient}/{sample}/outputs/pvacseq/MHC_Class_I/{sample}.expression_filtered.tsv' 
             for rix, (patient, sample, rna_sample) in cohort.iterrows()]
-vcfs=[f'main_run/{patient}/{sample}/outputs/haplotypecaller/{rna_sample}.vcf' 
+vcfs=[f'main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.both_annotated.vcf' 
             for rix, (patient, sample, rna_sample) in cohort.iterrows()]
 rule all:
     input:

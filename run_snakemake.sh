@@ -7,4 +7,5 @@ snakemake --configfile config.yaml \
     --cluster-config ./cluster.yaml \
     --cluster "${CLUSTER_CMD}" \
     --cluster-cancel bkill \
+    --allowed-rules vt_decompose_rna bam_readcount_rna vcf_readcount_annotator_snv_rna vcf_readcount_annotator_indel_rna \
     --rerun-incomplete #--dry-run
