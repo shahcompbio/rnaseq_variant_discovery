@@ -44,9 +44,6 @@ rule star:
     singularity:
         'docker://dceoy/star'
     threads: config['star']['threads'],
-    #resources: 
-    #    mem_mb=config['star']['mem_mb'],
-    #    io_heavy=config['star']['io_heavy'],
     shell:
         'touch {output.bam} && '
         'STAR '
@@ -231,22 +228,3 @@ rule vcf_readcount_annotator_indel_rna:
         'RNA -s {wildcards.rna_sample} '
         '-t indel -o {output.vcf}'
 
-#rule variant_filtration:
-#    input:
-#        vcf='',
-#    output:
-#        vcf='',
-#    params:
-#        reference_fasta=config['reference_fasta'],
-#    singularity:
-#        'docker://broadinstitute/gatk',
-#    shell:
-#        "gatk --java-options '-Xmx4g -Djava.io.tmpdir={params.tmp_dir}' "
-#        'HaplotypeCaller '
-#        '-R {params.reference_fasta} '
-#        '-V {input.vcf} '
-#        '-O {output.vcf} '
-
-
-#        [f'main_run/{patient}/{sample}/outputs/haplotypecaller/{rna_sample}.vcf' 
-#            for rix, (patient, sample, rna_sample) in cohort.iterrows()]

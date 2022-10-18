@@ -9,15 +9,11 @@ if config['test_mode']:
     cohort = pd.DataFrame([['test', 'testDNA', 'testRNA']], # test data
                    columns=['patient', 'sample', 'rna_sample'])
    
-pvacseq_tsvs = [f'main_run/{patient}/{sample}/outputs/pvacseq/MHC_Class_I/{sample}.filtered.tsv' 
-        for rix, (patient, sample, rna_sample) in cohort.iterrows()] 
-pvacseq_flt_tsvs = [f'main_run/{patient}/{sample}/outputs/pvacseq/MHC_Class_I/{sample}.expression_filtered.tsv' 
-            for rix, (patient, sample, rna_sample) in cohort.iterrows()]
+# RNA-seq variant discovery VCFs with variant read counts annotated
 vcfs=[f'main_run/{patient}/{sample}/outputs/rna_readcount/{rna_sample}.decomposed.both_annotated.vcf' 
             for rix, (patient, sample, rna_sample) in cohort.iterrows()]
 rule all:
     input:
         vcfs
 
-include: "rules/pvacseq.smk"
 include: "rules/rnaseq_variantcalling.smk"
